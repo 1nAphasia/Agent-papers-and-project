@@ -121,4 +121,5 @@ if __name__ =="__main__":
         }
     llm_config=LLMConfig(cfg)
     base_agent=BaseAgent(cfg)
+    
     base_agent.step("浓硫酸的化学性质有哪些？")
