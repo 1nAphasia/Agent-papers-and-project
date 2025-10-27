@@ -1,6 +1,16 @@
 import os
+import json
+from jinja2 import Template
+from typing import Dict,Any
 
-cur_dir=os.path.dirname(os.path.abspath(__file__))
 
-with open(os.path.join(cur_dir,"plain_prompt.txt",'r',encoding='utf-8')) as f:
-    PlainPrompt_User_Template="".join(f.readlines())
+class JinjaPromptTemplate:
+    def __init__(self,template_str):
+        self.template=Template(template_str)
+
+    def render(self,context:Dict[str,Any])->str:
+        context={
+            "to_json":lambda x:json.dumps(x,ensure_ascii=True,indent=2),
+            **context
+        }
+        return self.template.render(context)
