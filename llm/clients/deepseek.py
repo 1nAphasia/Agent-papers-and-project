@@ -2,7 +2,10 @@ from llm.adapter import LLMAdapter
 from openai import OpenAI
 import time
 from tenacity import retry,stop_after_attempt,wait_exponential
+from config.logger import setup_global_logger,get_logger
 
+setup_global_logger()
+logger=get_logger(__name__)
 
 class DeepSeekLLMAdapter(LLMAdapter):
     def __init__(self, config):
@@ -31,15 +34,12 @@ class DeepSeekLLMAdapter(LLMAdapter):
             )
             
             if not stream:
-                choice=response.choices[0].message
-                result={
-                    "content":choice.content,
-                    "tool_calls":choice.tool_calls,
-                    "usage":dict(response.usage) if response.usage else {},
-                    "model":response.model,
-                }
+                choice=response.choices[0]
                 duration=time.time()-start
-                return result
+                
+                logger.info("本次调用Deepseek api耗时"+str(duration)+"秒")
+                
+                return choice
             else:
                 return response
         except Exception as e:

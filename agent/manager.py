@@ -5,6 +5,7 @@ from tools.base import BaseTool
 from tools.toolrunner import ToolRunner
 import logging
 from uuid import uuid4
+from tools.mcp_client import MCPClient
 
 logger=logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ class AgentManager:
         self.tools:Dict[str,BaseTool]={}
         self.tool_runner=ToolRunner()
         self.task_contexts:Dict[str,dict]={}
+        self.mcp_clients:Dict[str,Dict]={}
 
     def register_agent(self,name:str,agent:BaseAgent):
         if name in self.agents:
@@ -26,9 +28,11 @@ class AgentManager:
         del self.agents[name]
         logger.info(f'registered agent:{name}')
 
-
     def register_tool(self,name:str,tool:BaseTool):
         self.tools[name]=tool
+
+    def register_mcp_client(self,name:str,client:MCPClient):
+        self.mcp_clients[name]=client
 
     
     def dispatch(self,
@@ -68,27 +72,26 @@ class AgentManager:
         response = agent.act(input_data)
         context["step_count"] += 1
 
-        if response.get("response") is not None:
-            logger.info(f"Task {task_id} completed by {agent_name}")
-            del self.task_contexts[task_id]  # 清理上下文
-            return True, response["response"]
-
+        if response.get("tool_calls"):
+            self.execute_tools_and_continue(task_id,response.get("tool_calls"),agent_name)
+        elif response.get("content"):
+            return True,response.get("content")
         else:
-            raise ValueError("Agent response must contain 'response' or 'tool_calls'")
+            raise ValueError("Agent response must contain 'content' or 'tool_calls'")
         
 
-    
     def _get_tool_schemas(self) -> List[Dict]:
         return [
             {
                 "type": "function",
                 "function": {
-                    "name": name,
+                    "name": tool.name,
                     "description": tool.description,
-                    "parameters": tool.input_schema
+                    "parameters": tool.inputSchema
                 }
             }
-            for name, tool in self.tools.items()
+            for client in self.mcp_clients.values()
+            for tool in client.list_tools()
         ]
     
     def execute_tools_and_continue(
@@ -103,7 +106,7 @@ class AgentManager:
             if tool_name not in self.tools:
                 results={"error":f'Tool {tool_name} not found'}
             else:
-                results=self.tool_runner.run(
+                results=self.mcp_clients.run(
                     tool=self.tools[tool_name],
                     params=tc['args'],
                     context={"task_id":task_id,'agents':current_agent}
@@ -121,3 +124,5 @@ class AgentManager:
     def shutdown(self):
         for agent in self.agents.values():
             agent.shutdown()
+        for client in self.mcp_clients.values():
+            client.shutdown()

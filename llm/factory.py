@@ -4,5 +4,5 @@ from config.schema import LLMConfig
 
 def get_llm_adapter(config:LLMConfig)->LLMAdapter:
     print(config.provider)
-    if config.provider is "deepseek" :
+    if config.provider == "deepseek" :
         return DeepSeekLLMAdapter(config)

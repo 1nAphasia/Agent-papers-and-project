@@ -25,7 +25,10 @@ DEFAULT_CONFIG = {
         "executor": {
             "role": "excutor",
             "tool_timeout": 30
-        }
+        },
+        "weather":{
+            "role":"weather",
+        },
     },
     "tools": {
         "enabled": ["http_get", "calculator"],
