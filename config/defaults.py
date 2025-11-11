@@ -29,6 +29,10 @@ DEFAULT_CONFIG = {
         "weather":{
             "role":"weather",
         },
+        "faissmanager":{
+            "role":"faissmanager",
+            
+        }
     },
     "tools": {
         "enabled": ["http_get", "calculator"],

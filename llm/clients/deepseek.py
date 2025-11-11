@@ -33,15 +33,12 @@ class DeepSeekLLMAdapter(LLMAdapter):
                 **kwargs
             )
             
-            if not stream:
-                choice=response.choices[0]
-                duration=time.time()-start
+            duration=time.time()-start
                 
-                logger.info("本次调用Deepseek api耗时"+str(duration)+"秒")
+            logger.info("本次调用Deepseek api耗时"+str(duration)+"秒")
                 
-                return choice
-            else:
-                return response
+            return response
+        
         except Exception as e:
             raise
 

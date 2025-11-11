@@ -15,6 +15,7 @@ from tenacity import retry, stop_after_attempt, wait_random_exponential, retry_i
 from copy import deepcopy
 from abc import ABC,abstractmethod
 from llm.adapter import LLMAdapter
+from memory.base import SimpleMemory
 
 
 
@@ -33,6 +34,8 @@ class BaseAgent(ABC):
         self.role=role
         self.config=config or {}
         self._initialized=False
+        self.memory=SimpleMemory()
+
     def initialize(self) -> None:
         """可选：延迟初始化资源（如 LLM 客户端、记忆模块）"""
         if not self._initialized:
@@ -84,7 +87,12 @@ class BaseAgent(ABC):
         默认实现：可被子类覆盖以实现反应式行为。
         """
         raise NotImplementedError("未实现observe方法")
+    
+    def remember(self,key:str,value:Any)->None:
+        self.memory.add(key,value)
         
+    def recall(self, key: str) -> Optional[Any]:
+        return self.memory.get(key)
 
     def shutdown(self) -> None:
         """释放资源（如关闭连接、保存状态）"""
