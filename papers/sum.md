@@ -1301,7 +1301,7 @@ $$fₜ = (sₜ, eₜ, rₜ, lₜ)$$
 
 为提升REAP框架中规划相关模块（尤其是调用频率较低、面临数据稀缺问题的重规划器）的性能，我们设计了多任务微调策略。其核心思路在于：尽管任务分解器、计划更新器和重规划器的执行难度不同，但它们共享关键功能共性——**都需要模型基于现有信息生成或修改结构化任务计划。我们通过合并三者的专属数据集（D_decomp、D_update、D_replan）来联合训练统一规划模型M_φ**，从而利用这一共性。
 
-训练目标是最小化加权联合损失函数$$L_{multi}$$：
+训练目标是最小化加权联合损失函数$L_{multi}$：
 
 $$\min_{\phi} \mathcal{L}_{\text{multi}}(\phi) = \sum_{\text{task} \in \mathcal{T}} \lambda_{\text{task}} \mathbb{E}_{(x, y) \sim \mathcal{D}_{\text{task}}} [\mathcal{L}_{\text{task}}(M_{\phi}(x), y)]$$
 
